@@ -116,34 +116,34 @@ public class RobotContainer {
                         swerveSubsystem,
                         () ->
                                 primaryController.getLeftY()
-                                        * ConfigManager.getInstance().get("driver_max_speed", 3.5),
+                                        * ConfigManager.getInstance().get("demo_max_speed", 1.0),
                         () ->
                                 primaryController.getLeftX()
-                                        * ConfigManager.getInstance().get("driver_max_speed", 3.5),
+                                        * ConfigManager.getInstance().get("demo_max_speed", 1.0),
                         () ->
                                 -primaryController.getRightX()
                                         * Math.toRadians(
                                                 ConfigManager.getInstance()
-                                                        .get("driver_max_speed_rot", 360)),
+                                                        .get("demo_max_speed_rot", 90)),
                         true,
                         true));
 
-        primaryController
-                .leftBumper()
-                .whileTrue(
-                        getPlaceCommand(
-                                () -> coralQueue.getCurrentPosition(), () -> coralQueue.getNext()));
+//        primaryController
+//                .leftBumper()
+//                .whileTrue(
+//                        getPlaceCommand(
+//                                () -> coralQueue.getCurrentPosition(), () -> coralQueue.getNext()));
 
         primaryController
                 .rightBumper()
                 .whileTrue(
-                        new SequentialCommandGroup(
+
                                 new ParallelRaceGroup(
                                         new DriveCommands(
                                                 swerveSubsystem,
-                                                primaryController::getLeftY,
-                                                primaryController::getLeftX,
-                                                () -> -primaryController.getRightX() * Math.PI,
+                                                () -> primaryController.getLeftY() / 2.0,
+                                                () -> primaryController.getLeftX() / 2.0,
+                                                () -> -primaryController.getRightX() * Math.PI/2,
                                                 true,
                                                 true),
                                         new ElevatorArmCommand(
@@ -151,39 +151,26 @@ public class RobotContainer {
                                                 armSubsystem,
                                                 () -> ScoringConstants.ScoringHeights.INTAKE),
                                         new IntakeCommand(
-                                                intakeSubsystem, IntakeCommand.IntakeMode.INTAKE)),
-                                new RunCommand(
-                                                () ->
-                                                        swerveSubsystem.drive(
-                                                                ConfigManager.getInstance()
-                                                                        .get("back_mps", -1.0),
-                                                                0.0,
-                                                                0.0,
-                                                                false,
-                                                                false,
-                                                                false),
-                                                swerveSubsystem)
-                                        .withTimeout(
-                                                ConfigManager.getInstance()
-                                                        .get("back_time_sec", 0.2))));
+                                                intakeSubsystem, IntakeCommand.IntakeMode.INTAKE))
+                              );
 
         elevatorSubsystem.setDefaultCommand(new BaseCommand(elevatorSubsystem, armSubsystem));
 
-        primaryController.povDown().whileTrue(new RunCommand(() -> swerveSubsystem.zeroGyro()));
+//        primaryController.povDown().whileTrue(new RunCommand(() -> swerveSubsystem.zeroGyro()));
 
-        primaryController
-                .a()
-                .whileTrue(
-                        new RunCommand(
-                                () ->
-                                        elevatorSubsystem.setVoltage(
-                                                ConfigManager.getInstance()
-                                                        .get("elevator_manual_zero", -2.0)),
-                                elevatorSubsystem));
-
-        primaryController
-                .x()
-                .whileTrue(new InstantCommand(() -> elevatorSubsystem.resetEncoders()));
+//        primaryController
+//                .a()
+//                .whileTrue(
+//                        new RunCommand(
+//                                () ->
+//                                        elevatorSubsystem.setVoltage(
+//                                                ConfigManager.getInstance()
+//                                                        .get("elevator_manual_zero", -2.0)),
+//                                elevatorSubsystem));
+//
+//        primaryController
+//                .x()
+//                .whileTrue(new InstantCommand(() -> elevatorSubsystem.resetEncoders()));
 
         //        primaryController
         //                .povUp()
@@ -195,9 +182,9 @@ public class RobotContainer {
         //                                                        .get("break_right_encoder_pos",
         // -10.0))));
 
-        secondaryController
-                .rightStick()
-                .onTrue(new InstantCommand(ScoringConstants::recomputeCoralPositions));
+//        secondaryController
+//                .rightStick()
+//                .onTrue(new InstantCommand(ScoringConstants::recomputeCoralPositions));
 
         // SECONDARY CONTROLLER
 
@@ -236,13 +223,35 @@ public class RobotContainer {
                                 armSubsystem,
                                 () -> ScoringConstants.ScoringHeights.L4));
 
-        secondaryController
-                .leftBumper()
-                .onTrue(new InstantCommand(() -> coralQueue.stepForwards())); //
+//        secondaryController
+//                .leftBumper()
+//                .onTrue(new InstantCommand(() -> coralQueue.stepForwards())); //
+//
+//        secondaryController
+//                .rightBumper()
+//                .onTrue(new InstantCommand(() -> coralQueue.stepBackwards()));
 
         secondaryController
-                .rightBumper()
-                .onTrue(new InstantCommand(() -> coralQueue.stepBackwards()));
+                .leftBumper()
+                .whileTrue(
+                        getPlaceCommand(
+                                () -> coralQueue.getCurrentPosition(), () -> coralQueue.getNext()));
+
+        secondaryController.rightBumper().onTrue(new DriveCommands(
+                swerveSubsystem,
+                () ->
+                        primaryController.getLeftY()
+                                * ConfigManager.getInstance().get("driver_max_speed", 3.5),
+                () ->
+                        primaryController.getLeftX()
+                                * ConfigManager.getInstance().get("driver_max_speed", 3.5),
+                () ->
+                        -primaryController.getRightX()
+                                * Math.toRadians(
+                                ConfigManager.getInstance()
+                                        .get("driver_max_speed_rot", 360)),
+                true,
+                true));
 
         secondaryController
                 .rightTrigger(0.2)
